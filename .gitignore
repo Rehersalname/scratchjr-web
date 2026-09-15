@@ -1,0 +1,9 @@
+ScratchJr-1.3.2.Setup.exe
+_extracted/
+desktop-src/.git/
+web/node_modules/
+web/dist/
+web/public/
+web/scratch-src/
+.DS_Store
+Thumbs.db
