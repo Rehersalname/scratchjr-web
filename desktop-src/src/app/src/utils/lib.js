@@ -17,10 +17,14 @@ export function libInit () {
  * Takes a string and evaluates all ${} as JavaScript and returns the resulting string.
  */
 export function preprocess (s) {
+    if (s == null) {
+        return '';
+    }
     var result = '';
     var len = s.length;
     var i = 0;
     var j;
+    var run = (0, eval);
     while ((i < len) && ((j = s.indexOf('$', i)) != -1)) { // eslint-disable-line no-cond-assign
         result += s.substring(i, j);
         i = j + 1;
@@ -29,7 +33,7 @@ export function preprocess (s) {
             var end = s.indexOf('}', start);
             if (end != -1) {
                 var expression = s.substring(start, end);
-                result += eval(expression);  // eslint-disable-line no-eval
+                result += run(expression);
                 i = end + 1;
             } else {
                 result += '$';
@@ -67,15 +71,18 @@ export function preprocessAndLoad (url) {
  * Also rewrites all instances of url() with a different base
  */
 export function preprocessAndLoadCss (baseUrl, url) {
-
-	// write the url into the tag so we don't keep loading styles <style id='url'>
-	// into the head tag
 	let existingStyleElement = document.getElementById(url);
 	if (existingStyleElement) {
 		return;
 	}
 
-    var cssData = preprocessAndLoad(url);
+    var cssData = '';
+    try {
+        cssData = preprocessAndLoad(url) || '';
+    } catch (e) {
+        console.warn('Failed to preprocess CSS', url, e);
+        return;
+    }
     cssData = cssData.replace(/url\('/g, 'url(\'' + baseUrl + '/');
     cssData = cssData.replace(/url\(([^'])/g, 'url(' + baseUrl + '/$1');
 
@@ -672,6 +679,10 @@ export function css_vh (y) {
 export function css_vw (x) {
     return (x *  window.innerWidth / 100.0) + 'px';
 }
+
+window.scaleMultiplier = scaleMultiplier;
+window.css_vh = css_vh;
+window.css_vw = css_vw;
 
 Number.prototype.mod = function (n) {  // eslint-disable-line no-extend-native
     return ((this % n) + n) % n;

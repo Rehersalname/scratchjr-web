@@ -13,14 +13,30 @@ import {inappInterfaceGuide, inappAbout, inappBlocksGuide, inappPaintEditorGuide
 
 function loadSettings (settingsRoot, whenDone) {
 	IO.requestFromServer(settingsRoot + 'settings.json', (result) => {
-		window.Settings = JSON.parse(result);
+		try {
+			window.Settings = JSON.parse(result);
+		} catch (e) {
+			console.warn('Failed to parse settings.json', e);
+			return;
+		}
 		whenDone();
 	});
 }
 
+let appStarted = false;
 
-// App-wide entry-point
-window.onload = () => loadPage(window.scratchJrPage);
+function startApp () {
+	if (appStarted) {
+		return;
+	}
+	appStarted = true;
+	loadPage(window.scratchJrPage);
+}
+
+window.onload = startApp;
+if (document.readyState === 'complete') {
+	startApp();
+}
 
 
 
